@@ -1,0 +1,422 @@
+/* Admin Login Component Styles */
+
+// Color variables
+:host {
+  --healthcare-primary: #3b82f6;
+  --healthcare-dark: #1e40af;
+  --healthcare-light: #eff6ff;
+  --healthcare-secondary: #06b6d4;
+  --muted-foreground: #6b7280;
+  --foreground: #111827;
+  --muted: #f3f4f6;
+  --border: #d1d5db;
+  --input: #e5e7eb;
+  --ring: #3b82f6;
+  --light-blue: #f0f9ff;
+}
+
+// Base layout
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #f0fdf4, white, #ecfdf5);
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+// Card styles
+.w-full {
+  width: 100%;
+}
+
+.max-w-md {
+  max-width: 28rem;
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.border {
+  border: 1px solid var(--border);
+}
+
+// Header styles
+.text-center {
+  text-align: center;
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
+}
+
+.pb-4 {
+  padding-bottom: 1rem;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.w-16 {
+  width: 4rem;
+}
+
+.h-16 {
+  height: 4rem;
+}
+
+.bg-green-600 {
+ // background-color: #059669;
+  background-color: #4F46E5;
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.w-8 {
+  width: 2rem;
+}
+
+.h-8 {
+  height: 2rem;
+}
+
+.text-white {
+  color: white;
+}
+
+.text-2xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-green-900 {
+  //color: #14532d;
+  color: #3028be;
+}
+
+.text-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+// Form styles
+.pt-0 {
+  padding-top: 0;
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.leading-none {
+  line-height: 1;
+}
+
+.peer-disabled\:cursor-not-allowed:disabled {
+  cursor: not-allowed;
+}
+
+.peer-disabled\:opacity-70:disabled {
+  opacity: 0.7;
+}
+
+// Input field styles with proper icon spacing
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.left-3 {
+  left: 0.75rem;
+}
+
+.top-1\/2 {
+  top: 50%;
+}
+
+.transform {
+  transform: var(--tw-transform);
+}
+
+.-translate-y-1\/2 {
+  --tw-translate-y: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.w-4 {
+  width: 1rem;
+}
+
+.h-4 {
+  height: 1rem;
+}
+
+.pl-12 {
+  padding-left: 3rem;
+}
+
+.pr-4 {
+  padding-right: 1rem;
+}
+
+.h-10 {
+  height: 2.5rem;
+}
+
+.rounded-md {
+  border-radius: 0.375rem;
+}
+
+.border-input {
+  border-color: var(--input);
+}
+
+.bg-light-blue {
+  background-color: var(--light-blue);
+}
+
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.ring-offset-background {
+  --tw-ring-offset-color: white;
+}
+
+.file\:border-0::file-selector-button {
+  border-width: 0;
+}
+
+.file\:bg-transparent::file-selector-button {
+  background-color: transparent;
+}
+
+.file\:text-sm::file-selector-button {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.file\:font-medium::file-selector-button {
+  font-weight: 500;
+}
+
+.placeholder\:text-muted-foreground::placeholder {
+  color: var(--muted-foreground);
+}
+
+.focus-visible\:outline-none:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-visible\:ring-2:focus-visible {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+.focus-visible\:ring-ring:focus-visible {
+  --tw-ring-color: var(--ring);
+}
+
+.focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-offset-width: 2px;
+}
+
+.disabled\:cursor-not-allowed:disabled {
+  cursor: not-allowed;
+}
+
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+}
+
+// Error message styles
+.text-red-500 {
+  color: #ef4444;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
+// Button styles
+.hover\:bg-green-700:hover {
+ // background-color: #047857;
+ background-color: #2d24de;
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-offset-width: 2px;
+}
+
+.disabled\:pointer-events-none:disabled {
+  pointer-events: none;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+// Footer styles
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.pt-4 {
+  padding-top: 1rem;
+}
+
+.border-t {
+  border-top: 1px solid var(--border);
+}
+
+.text-purple-600 {
+  color: #9333ea;
+}
+
+.hover\:text-purple-700:hover {
+  color: #7c3aed;
+}
+
+// Input focus effects
+input:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+// Custom input styling with proper icon spacing
+input[type="tel"], input[type="text"] {
+  background-color: #f8fafc;
+  transition: all 0.2s ease-in-out;
+  
+  &:focus {
+    background-color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+}
+
+// Icon styling - prevent overlap
+.absolute svg {
+  color: #6b7280;
+  transition: color 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+// Ensure icons don't interfere with input interaction
+input:focus + .absolute svg,
+input:focus ~ .absolute svg {
+  color: #3b82f6;
+}
+
+// Button hover effects
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .max-w-md {
+    max-width: 95%;
+  }
+  
+  .p-6 {
+    padding: 1rem;
+  }
+}
