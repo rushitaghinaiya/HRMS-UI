@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UserDashboardResponse,GlobalDashboardResponse,Employee,TotalDay,AttendanceLog} from '../Pages/dashboard/dashboard.component';
+import { UserDashboardResponse,GlobalDashboardResponse,LeaveRequest,Employee,TotalDay,AttendanceLog,BirthdayDto,HolidayDto} from '../Pages/dashboard/dashboard.component';
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
 
@@ -31,4 +31,32 @@ export class DashboardService {
   saveAttendance(log: AttendanceLog): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}Employee/SaveAttendanceLog`, log);
   }
+
+  applyLeave(log:LeaveRequest ): Observable<any> {
+    debugger;
+    return this.http.post<any>(`${this.baseUrl}Leave/ApplyLeave`, log);
+  }
+  downloadAttendanceReport(month: string) {
+  return this.http.get(`https://localhost:5001/report/attendance?month=${month}&export=true`, {
+    responseType: 'blob'
+  });
+}
+
+downloadLeavesReport(month: string) {
+  return this.http.get(`https://localhost:5001/report/leaves?month=${month}&export=true`, {
+    responseType: 'blob'
+  });
+}
+getHolidays(year: number) {
+  return this.http.get<HolidayDto[]>(`https://localhost:5001/holidays?year=${year}`);
+}
+
+addHoliday(holiday: any) {
+  return this.http.post(`https://localhost:5001/holidays/add`, holiday);
+}
+
+getBirthdays(month: number) {
+  return this.http.get<BirthdayDto[]>(`https://localhost:5001/employee/birthdays?month=${month}`);
+}
+
 }

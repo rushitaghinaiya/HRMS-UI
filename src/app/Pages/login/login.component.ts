@@ -51,7 +51,7 @@ export class LoginComponent {
 
   checkUserExists(email: string): Observable<any> {
     const cleanMobile = email.replace(/\D/g, '');
-    return this.http.post<any>(`${this.baseUrl}UserSignUp/RequestOtp`, {email}).pipe(
+    return this.http.post<any>(`${this.baseUrl}UserSignUp/RequestOtp`, { email }).pipe(
       catchError(() => of({ success: false })) // return default structure on error
     );
   }
@@ -141,8 +141,19 @@ export class LoginComponent {
         }
         localStorage.setItem('accessToken', response.accessToken);
 
-
-        this.router.navigate(['/dashboard']);
+        const userString = localStorage.getItem('user');
+        if (userString) {
+          const user = JSON.parse(userString);
+          if (user.roleName == 'Admin') {
+            this.router.navigate(['/admindashboard'])
+          }
+          if (user.roleName == 'Employee') {
+            this.router.navigate(['/dashboard']);
+          }
+          if (user.roleName == 'Manager') {
+            this.router.navigate(['/dashboard']);
+          }
+        }
         this.isLoading = false;
       });
 

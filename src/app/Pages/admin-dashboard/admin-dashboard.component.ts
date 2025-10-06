@@ -2,16 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../Services/dashboard.service';
+import { AdminDashboardService } from '../../Services/admin-dashboard.service';
 import { HttpClientModule } from '@angular/common/http';
 
 export interface Employee {
-  employeeId: number;
-  name: string;
-  roleName: string;
-  email: string;
-  managerName: string;
-  dateOfBirth: Date;
-  dateOfJoining: Date;
+  EmployeeId: number;
+  Name: string;
+  RoleName: string;
+  Email: string;
+  ManagerName: string;
+  DateOfBirth: Date;
+  DateOfJoining: Date;
 }
 
 interface LeaveBalance {
@@ -28,11 +29,15 @@ export interface AttendanceRecord {
 }
 
 export interface LeaveHistory {
-  Type: string;
-  StartDate: string;
-  EndDate: string;
-  Days: number;
-  Status: string;
+  leaveId:number;
+  email: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  status: string;
+  reason:string;
+  appliedDate:string;
 }
 
 export interface Holiday {
@@ -84,27 +89,16 @@ export interface BirthdayDto {
   department: string;
   dateOfBirth: string; // also ISO string
 }
-export interface LeaveRequest {
-  employeeId: number;
-  leaveType: string;       // Casual, Sick, Paid, etc.
-  startDate: string;       // ISO string from API e.g. "2025-10-05T00:00:00"
-  endDate: string;         // ISO string
-  reason?: string;         // optional
- 
-}
-
 
 @Component({
-  standalone: true,
-  selector: 'app-dashboard',
-  imports: [FormsModule, CommonModule, HttpClientModule],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  selector: 'app-admin-dashboard',
+  imports: [FormsModule, CommonModule],
+  templateUrl: './admin-dashboard.component.html',
+  styleUrl: './admin-dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit {
   activeTab: string = 'dashboard';
 
- // leaveRequest: LeaveRequest|null = null;
   leaveBalance: LeaveBalance[] = [];
   recentAttendance: AttendanceRecord[] = [];
   leaveHistory: LeaveHistory[] = [];
@@ -119,25 +113,23 @@ export class DashboardComponent implements OnInit {
     presentDays: 0
   }
   employee: Employee = {
-    employeeId: 0,
-    name: '',
-    email: '',
-    managerName: '',
-    roleName: '',
-    dateOfBirth: new Date,
-    dateOfJoining: new Date
+    EmployeeId: 0,
+    Name: '',
+    Email: '',
+    ManagerName: '',
+    RoleName: '',
+    DateOfBirth: new Date,
+    DateOfJoining: new Date
   }
   userId: number = 0;
   // Form data
-  leaveFormData : LeaveRequest={
-     
-    employeeId:0,
+  leaveFormData = {
     leaveType: 'Casual Leave',
     startDate: '',
     endDate: '',
-    reason: '',
-
+    reason: ''
   };
+  selectedMonthYear: string = ''; // format: "2025-10"
 
   selectedMonth: string = '';
   checkInTime: Date | null = null;
@@ -154,7 +146,7 @@ export class DashboardComponent implements OnInit {
   //   paid: { allocated: 15, used: 5, available: 10 }
   // };
 
-  constructor(private dashboardService: DashboardService) { }
+  constructor(private dashboardService: DashboardService, private admindashboardService: AdminDashboardService) { }
 
   ngOnInit(): void {
     debugger;
@@ -180,15 +172,21 @@ export class DashboardComponent implements OnInit {
   }
 
   getDashboard() {
-    this.dashboardService.getEmployeeById(this.userId).subscribe(res => {
-      this.employee = res;
-      debugger;
+    // this.dashboardService.getEmployeeById(this.userId).subscribe(res => {
+    //   this.employee = res;
+    // });
+
+    const today = new Date();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    this.selectedMonthYear = `${today.getFullYear()}-${month}`;
+    debugger; 
+    this.admindashboardService.getLeaveRequest(today.getMonth() + 1, today.getFullYear()).subscribe(res => {
+      this.leaveHistory = res
     });
     // Call user dashboard API
     this.dashboardService.getUserDashboard(this.userId).subscribe(res => {
       this.leaveBalance = res.leaveBalance;
       this.recentAttendance = res.recentAttendance;
-      this.leaveHistory = res.leaveHistory;
     });
 
     // Call global dashboard API
@@ -202,16 +200,12 @@ export class DashboardComponent implements OnInit {
       this.totalDay = res;
     });
   }
-  submitLeaveRequest() {
-    debugger;
-    this.leaveFormData.employeeId=this.userId;
-    this.dashboardService.applyLeave(this.leaveFormData).subscribe(res => {
-      if (res=='success') {
-        
-      }
+  onMonthChange(event: any): void {
+    const [year, month] = this.selectedMonthYear.split('-').map(Number);
+    this.admindashboardService.getLeaveRequest(month, year).subscribe(res => {
+      this.leaveHistory = res
     });
   }
-
   downloadAttendance(month: string) {
     this.dashboardService.downloadAttendanceReport(month).subscribe(blob => {
       const url = window.URL.createObjectURL(blob);
@@ -249,6 +243,17 @@ export class DashboardComponent implements OnInit {
   setActiveTab(tab: string): void {
     this.activeTab = tab;
   }
+updateStatus(leaveId: number, status: string): void {
+  this.admindashboardService.updateLeaveStatus(leaveId, status,this.userId).subscribe({
+    next: () => {
+      alert("Status updated successfully")
+      // Update local data instead of reloading everything
+      const leave = this.leaveHistory.find(l => l.leaveId === leaveId);
+      if (leave) leave.status = status;
+    },
+    error: (err) => console.error('Error updating status', err)
+  });
+}
 
   handleCheckOut(): void {
     if (!this.checkInTime) return;
@@ -320,9 +325,14 @@ export class DashboardComponent implements OnInit {
     return new Date(dateString).toLocaleDateString('en-US', { month: 'short' });
   }
 
+  submitLeaveRequest(): void {
+    console.log('Leave request submitted:', this.leaveFormData);
+    // Add your leave submission logic here
+    alert('Leave request submitted successfully!');
+  }
+
   cancelLeaveRequest(): void {
     this.leaveFormData = {
-      employeeId:0,
       leaveType: 'Casual Leave',
       startDate: '',
       endDate: '',
