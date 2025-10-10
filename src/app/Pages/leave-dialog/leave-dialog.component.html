@@ -1,0 +1,63 @@
+<div class="custom-dialog-backdrop" (click)="close()"></div>
+
+<div class="custom-dialog">
+    <h2>Add Leave</h2>
+      <div class="col-md-4">
+            <div class="card p-3 mb-3 border-primary">
+                <h5 class="text-primary text-center">Select Year :</h5>
+
+                <div class="mb-2">
+                    <label>Year :</label>
+                    <input type="number" class="form-control" [(ngModel)]="selectedLeaveBalanceYear" min="2025"
+                        required />
+                </div>
+
+
+            </div>
+        </div>
+    <form (ngSubmit)="save()" #empForm="ngForm" class="form-container">
+      
+        <div class="row">
+            <div class="col-md-4" *ngFor="let leave of leaveTypes; let i = index">
+                <div class="card p-3 mb-3 border-primary">
+                    <h5 class="text-primary text-center">{{ leave.LeaveType }} Leave :</h5>
+
+                    <div class="mb-2">
+                        <label>Allocated :</label>
+                        <input type="number" class="form-control" [(ngModel)]="leave.Allocated" name="Allocated{{ i }}"
+                            min="0" required />
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1
+      <div class="form-group">
+        <label>Casula Leave</label>
+        <input type="text" [(ngModel)]="addLeaveBalance.casualLeave" name="name" required />
+        
+      </div>
+
+      <div class="form-group">
+        <label>Sick Leave</label>
+        <input type="email" [(ngModel)]="addLeaveBalance.sickLeave" name="email" required email />
+       
+      </div>
+
+        <div class="form-group">
+        <label>Paid Leave</label>
+        <input type="number" [(ngModel)]="addLeaveBalance.paidLeave" name="email" required email />
+        
+      </div> -->
+
+
+        <!-- Actions -->
+        <div class="dialog-actions">
+            <button type="button" class="btn cancel" (click)="close()">Cancel</button>
+            <button type="submit" class="btn save">Save</button>
+        </div>
+    </form>
+
+</div>

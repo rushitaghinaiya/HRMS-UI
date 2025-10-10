@@ -212,26 +212,6 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  downloadAttendance(month: string) {
-    this.dashboardService.downloadAttendanceReport(month).subscribe(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `attendance_${month}.csv`;
-      a.click();
-    });
-  }
-
-  downloadLeaves(month: string) {
-    this.dashboardService.downloadLeavesReport(month).subscribe(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `leaves_${month}.csv`;
-      a.click();
-    });
-  }
-
   handleCheckIn(): void {
     this.checkInTime = new Date();
     this.updateElapsedTime();

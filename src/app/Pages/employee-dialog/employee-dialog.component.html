@@ -1,0 +1,113 @@
+<!-- employee-dialog.component.html -->
+<div class="custom-dialog-backdrop" (click)="close()"></div>
+
+<div class="custom-dialog">
+  <h2>{{ employee?.employeeId ? 'Edit Employee' : 'Add Employee' }}</h2>
+
+  <form (ngSubmit)="save()" #empForm="ngForm" class="form-container">
+    <!-- Row 1 -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="employee.name" name="name" required />
+        <small class="error" *ngIf="empForm.submitted && !employee.name">
+          Name is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="employee.email" name="email" required email />
+        <small class="error" *ngIf="empForm.submitted && !employee.email">
+          Email is required
+        </small>
+      </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input type="date" [(ngModel)]="employee.dateOfBirth" name="dob" required />
+        <small class="error" *ngIf="empForm.submitted && !employee.dateOfBirth">
+          Birth Date is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Date of Joining</label>
+        <input type="date" [(ngModel)]="employee.dateOfJoining" name="doj" required />
+        <small class="error" *ngIf="empForm.submitted && !employee.dateOfJoining">
+          Joining Date is required
+        </small>
+      </div>
+    </div>
+
+     <!-- Row 3 -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Probation Start</label>
+        <input type="date" [(ngModel)]="employee.startDate" name="probationStart" required />
+        <small class="error" *ngIf="empForm.submitted && !employee.startDate">
+           Date is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Probation End</label>
+        <input type="date" [(ngModel)]="employee.endDate" name="probationEnd" required />
+        <small class="error" *ngIf="empForm.submitted && !employee.endDate">
+           Date is required
+        </small>
+      </div>
+    </div>
+    <div class="form-group">
+        <label>Probation Remark</label>
+        <input type="text" [(ngModel)]="employee.remarks" name="remark" />
+        
+      </div>
+    <!-- Row 3 -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Role</label>
+        <select [(ngModel)]="employee.roleId" name="roleId" required>
+          <option *ngFor="let role of roleList" [value]="role.roleId">
+            {{ role.roleName }}
+          </option>
+        </select>
+        <small class="error" *ngIf="empForm.submitted && !employee.roleId">
+          Role is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Manager</label>
+        <select [(ngModel)]="employee.managerId" name="managerId" required>
+          <option *ngFor="let emp of managerList" [value]="emp.employeeId">
+            {{ emp.name }}
+          </option>
+        </select>
+        <small class="error" *ngIf="empForm.submitted && !employee.managerId">
+          Manager is required
+        </small>
+      </div>
+    </div>
+
+
+    <!-- Row 4 (Status full width if you want) -->
+    <div class="form-group">
+      <label>Status</label>
+      <select [(ngModel)]="employee.isActive" name="isActive" required>
+        <option [ngValue]="true">Active</option>
+        <option [ngValue]="false">Inactive</option>
+      </select>
+    </div>
+
+    <!-- Actions -->
+    <div class="dialog-actions">
+      <button type="button" class="btn cancel" (click)="close()">Cancel</button>
+      <button type="submit" class="btn save">Save</button>
+    </div>
+  </form>
+
+</div>

@@ -3,23 +3,35 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../Services/dashboard.service';
 import { AdminDashboardService } from '../../Services/admin-dashboard.service';
+import { EmployeeDialogComponent } from '../employee-dialog/employee-dialog.component';
+import { LeaveDialogComponent } from '../leave-dialog/leave-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { HttpClientModule } from '@angular/common/http';
 
 export interface Employee {
-  EmployeeId: number;
-  Name: string;
-  RoleName: string;
-  Email: string;
-  ManagerName: string;
-  DateOfBirth: Date;
-  DateOfJoining: Date;
+  employeeId: number;
+  name: string;
+  roleName: string;
+  email: string;
+  managerId: number;
+  managerName: string;
+  dateOfBirth: Date;
+  dateOfJoining: Date;
+  remarks?: string;
+  probationId?: number;
+  startDate?: Date;
+  endDate?: Date;
+  isActive?: boolean;
 }
 
-interface LeaveBalance {
+export interface LeaveBalance {
   LeaveType: string;
   Allocated: number;
   Used: number;
   Available: number
+  Year:string
 }
 export interface AttendanceRecord {
   Date: string;
@@ -29,15 +41,16 @@ export interface AttendanceRecord {
 }
 
 export interface LeaveHistory {
-  leaveId:number;
+  leaveId: number;
+  managerId: number;
   email: string;
   leaveType: string;
   startDate: string;
   endDate: string;
   days: number;
   status: string;
-  reason:string;
-  appliedDate:string;
+  reason: string;
+  appliedDate: string;
 }
 
 export interface Holiday {
@@ -72,9 +85,13 @@ export interface GlobalDashboardResponse {
 export interface AttendanceLog {
   logId?: number;       // DB will generate this
   employeeId: number;
+  name?: string;
+  email?: string;
   date: string;
   checkInTime: string;
   checkOutTime: string;
+  managerId?: number;
+  hours?: string;
 }
 export interface HolidayDto {
   holidayId: number;
@@ -92,13 +109,14 @@ export interface BirthdayDto {
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, EmployeeDialogComponent,LeaveDialogComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
 })
 export class AdminDashboardComponent implements OnInit {
   activeTab: string = 'dashboard';
-
+  selectedLeaveMonth: string = '';
+  selectedLeaveBalanceYear:string='';
   leaveBalance: LeaveBalance[] = [];
   recentAttendance: AttendanceRecord[] = [];
   leaveHistory: LeaveHistory[] = [];
@@ -113,14 +131,17 @@ export class AdminDashboardComponent implements OnInit {
     presentDays: 0
   }
   employee: Employee = {
-    EmployeeId: 0,
-    Name: '',
-    Email: '',
-    ManagerName: '',
-    RoleName: '',
-    DateOfBirth: new Date,
-    DateOfJoining: new Date
+    employeeId: 0,
+    name: '',
+    email: '',
+    managerId: 0,
+    managerName: '',
+    roleName: '',
+    dateOfBirth: new Date,
+    dateOfJoining: new Date
   }
+  attendanceLog: AttendanceLog[] = [];
+  employeeList: Employee[] = [];
   userId: number = 0;
   // Form data
   leaveFormData = {
@@ -129,7 +150,11 @@ export class AdminDashboardComponent implements OnInit {
     endDate: '',
     reason: ''
   };
+  editingRow: number | null = null; // holds employeeId of row being edited
+  editedEmployee: any = {};
+
   selectedMonthYear: string = ''; // format: "2025-10"
+  selectedAttMonthYear: string = ''; // format: "2025-10"
 
   selectedMonth: string = '';
   checkInTime: Date | null = null;
@@ -140,19 +165,21 @@ export class AdminDashboardComponent implements OnInit {
   birthdays: BirthdayDto[] = [];
   private intervalId: any;
 
-  // leaveBalance: LeaveBalance = {
-  //   casual: { allocated: 12, used: 3, available: 9 },
-  //   sick: { allocated: 10, used: 2, available: 8 },
-  //   paid: { allocated: 15, used: 5, available: 10 }
-  // };
+   // Default 3 leave types
+  leaveTypes: LeaveBalance[] = [
+    { LeaveType: 'Casual', Allocated: 0, Used: 0, Available: 0,Year:'' },
+    { LeaveType: 'Paid', Allocated: 0, Used: 0, Available: 0,Year:'' },
+    { LeaveType: 'Sick', Allocated: 0, Used: 0, Available: 0,Year:'' }
+  ];
 
-  constructor(private dashboardService: DashboardService, private admindashboardService: AdminDashboardService) { }
+  constructor(private dashboardService: DashboardService, private dialog: MatDialog, private admindashboardService: AdminDashboardService) { }
 
   ngOnInit(): void {
-    debugger;
+
     const userString = localStorage.getItem('user');
     if (userString) {
       const user = JSON.parse(userString);
+      this.employee = user;
       this.userId = user.employeeId; // <-- get ID
       console.log('User ID:', this.userId);
     }
@@ -178,36 +205,53 @@ export class AdminDashboardComponent implements OnInit {
 
     const today = new Date();
     const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    this.selectedMonthYear = `${today.getFullYear()}-${month}`;
-    debugger; 
+    this.selectedMonthYear = this.selectedLeaveMonth = this.selectedAttMonthYear = `${today.getFullYear()}-${month}`;
+
     this.admindashboardService.getLeaveRequest(today.getMonth() + 1, today.getFullYear()).subscribe(res => {
-      this.leaveHistory = res
-    });
-    // Call user dashboard API
-    this.dashboardService.getUserDashboard(this.userId).subscribe(res => {
-      this.leaveBalance = res.leaveBalance;
-      this.recentAttendance = res.recentAttendance;
+      this.leaveHistory = this.employee.roleName == 'Admin' ? res : res.filter(l => l.managerId === this.userId);
     });
 
+    this.admindashboardService.getAttendanceLog(today.getMonth() + 1, today.getFullYear()).subscribe(res => {
+      this.attendanceLog = this.employee.roleName == 'Admin' ? res : res.filter(l => l.managerId === this.userId);
+    });
+
+
+    this.loadEmployees();
     // Call global dashboard API
     this.dashboardService.getGlobalDashboard().subscribe(res => {
-      debugger;
       this.upcomingHolidays = res.upcomingHolidays;
       this.upcomingBirthdays = res.upcomingBirthdays;
     });
     this.dashboardService.getTotalDayById(this.userId).subscribe(res => {
-      debugger;
+
       this.totalDay = res;
+    });
+  }
+  loadEmployees() {
+    this.admindashboardService.getAllEmployee().subscribe(res => {
+      this.employeeList = res.map((emp: any) => ({
+        ...emp,
+        dateOfJoining: emp.dateOfJoining ? emp.dateOfJoining.split('T')[0] : null,
+        dateOfBirth: emp.dateOfBirth ? emp.dateOfBirth.split('T')[0] : null
+      }));
     });
   }
   onMonthChange(event: any): void {
     const [year, month] = this.selectedMonthYear.split('-').map(Number);
     this.admindashboardService.getLeaveRequest(month, year).subscribe(res => {
-      this.leaveHistory = res
+      this.leaveHistory =this.employee.roleName=='Admin'?res: res.filter(l => l.managerId === this.userId);
+    });
+
+  }
+  onAttendanceMonthchnge(event: any): void {
+    const [year, month] = this.selectedAttMonthYear.split('-').map(Number);
+
+    this.admindashboardService.getAttendanceLog(month, year).subscribe(res => {
+      this.attendanceLog =this.employee.roleName=='Admin'?res: res.filter(l => l.managerId === this.userId);
     });
   }
   downloadAttendance(month: string) {
-    this.dashboardService.downloadAttendanceReport(month).subscribe(blob => {
+    this.admindashboardService.downloadAttendanceReport(month, this.userId).subscribe(blob => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -217,7 +261,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   downloadLeaves(month: string) {
-    this.dashboardService.downloadLeavesReport(month).subscribe(blob => {
+    this.admindashboardService.downloadLeavesReport(month, this.userId).subscribe(blob => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -243,17 +287,17 @@ export class AdminDashboardComponent implements OnInit {
   setActiveTab(tab: string): void {
     this.activeTab = tab;
   }
-updateStatus(leaveId: number, status: string): void {
-  this.admindashboardService.updateLeaveStatus(leaveId, status,this.userId).subscribe({
-    next: () => {
-      alert("Status updated successfully")
-      // Update local data instead of reloading everything
-      const leave = this.leaveHistory.find(l => l.leaveId === leaveId);
-      if (leave) leave.status = status;
-    },
-    error: (err) => console.error('Error updating status', err)
-  });
-}
+  updateStatus(leaveId: number, status: string): void {
+    this.admindashboardService.updateLeaveStatus(leaveId, status, this.userId).subscribe({
+      next: () => {
+        alert("Status updated successfully")
+        // Update local data instead of reloading everything
+        const leave = this.leaveHistory.find(l => l.leaveId === leaveId);
+        if (leave) leave.status = status;
+      },
+      error: (err) => console.error('Error updating status', err)
+    });
+  }
 
   handleCheckOut(): void {
     if (!this.checkInTime) return;
@@ -309,7 +353,7 @@ updateStatus(leaveId: number, status: string): void {
   }
 
   getLeaveBalanceEntries(): Array<[string, any]> {
-    debugger;
+
     return Object.entries(this.leaveBalance);
   }
 
@@ -363,4 +407,77 @@ updateStatus(leaveId: number, status: string): void {
     };
     return icons[iconName] || '';
   }
+  // copy of employee being edited
+
+  // employee-list.component.ts
+  dialogOpen = false;
+  leaveDialogOpen = false;
+
+  selectedEmployee: any = {};
+  addLeaveBalance: any = {};
+
+
+  openDialog(emp?: any) {
+    this.selectedEmployee = emp ? { ...emp } : {};
+    if (this.selectedEmployee.startDate) {
+      this.selectedEmployee.startDate = this.selectedEmployee.startDate.split('T')[0];
+    }
+    if (this.selectedEmployee.endDate) {
+      this.selectedEmployee.endDate = this.selectedEmployee.endDate.split('T')[0];
+    }
+    this.dialogOpen = true;
+  }
+
+  openLeaveDialog(emp?: any) {
+    this.selectedEmployee = emp ? { ...emp } : {};
+    this.leaveDialogOpen = true;
+  }
+
+  handleSave(emp: any) {
+    if (emp.employeeId) {
+      // Update employee
+      this.admindashboardService.updateEmployee(emp).subscribe({
+        next: () => this.loadEmployees(),
+        error: (err) => console.error('Update failed', err)
+      });
+    } else {
+      // Add employee
+      this.admindashboardService.add(emp).subscribe({
+        next: () => this.loadEmployees(),
+        error: (err) => console.error('Add failed', err)
+      });
+    }
+    this.dialogOpen = false;
+  }
+
+  handleLeaveSave(leave:any){
+    debugger
+    this.leaveTypes=leave;
+    const leaves = this.leaveTypes.map(l => ({
+      EmployeeId: this.selectedEmployee.employeeId,
+      LeaveType: l.LeaveType,
+      Allocated: l.Allocated,
+      Used: l.Used,
+      Year:l.Year
+    }));
+    this.leaveDialogOpen=false;
+
+    this.admindashboardService.addLeaveBalance(leaves).subscribe({
+      next: () => {
+        alert('Leave balance assigned successfully!');
+        //this.getAllLeaveBalances();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+ save() {
+    if (!this.employee.name || !this.employee.email) {
+      return; // stop save if required fields missing
+    }
+  }
+
+  close() {
+  }
+
 }

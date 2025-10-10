@@ -63,7 +63,7 @@
               <p *ngIf="checkOutTime">Checked out at: {{ checkOutTime | date:'shortTime' }}</p>
               <p *ngIf="totalWorkedTime">Total worked: {{ totalWorkedTime }}</p>
             </div>
-           
+
             <ng-template #notCheckedIn>
               <div class="not-checked-text">Not checked in today</div>
             </ng-template>
@@ -215,7 +215,7 @@
         </div>
       </div>
     </div>
-
+    
     <!-- Attendance Tab -->
     <div *ngIf="activeTab === 'attendance'" class="content-section">
       <h2 class="page-title">Attendance Records</h2>
@@ -333,7 +333,6 @@
           <h3 class="report-title">Attendance Report</h3>
           <p class="report-desc">Download monthly attendance summary</p>
           <button class="download-button" (click)="downloadReport('Attendance')">Download CSV</button>
-          <button (click)="downloadAttendance(selectedMonth)" class="bg-purple-600 text-white px-4 py-2 rounded">Download Attendance CSV</button>
         </div>
 
         <div class="report-card">
@@ -346,7 +345,6 @@
           <h3 class="report-title">Leave Report</h3>
           <p class="report-desc">Download leave balance and history</p>
           <button class="download-button" (click)="downloadReport('Leave')">Download Excel</button>
-          <button (click)="downloadLeaves(selectedMonth)" class="bg-purple-600 text-white px-4 py-2 rounded">Download Leaves CSV</button>
         </div>
       </div>
     </div>
