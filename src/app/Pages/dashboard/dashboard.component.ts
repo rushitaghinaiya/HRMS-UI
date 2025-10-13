@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../Services/dashboard.service';
 import { HttpClientModule } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 export interface Employee {
   employeeId: number;
@@ -90,7 +91,7 @@ export interface LeaveRequest {
   startDate: string;       // ISO string from API e.g. "2025-10-05T00:00:00"
   endDate: string;         // ISO string
   reason?: string;         // optional
- 
+
 }
 
 
@@ -104,7 +105,7 @@ export interface LeaveRequest {
 export class DashboardComponent implements OnInit {
   activeTab: string = 'dashboard';
 
- // leaveRequest: LeaveRequest|null = null;
+  // leaveRequest: LeaveRequest|null = null;
   leaveBalance: LeaveBalance[] = [];
   recentAttendance: AttendanceRecord[] = [];
   leaveHistory: LeaveHistory[] = [];
@@ -129,9 +130,9 @@ export class DashboardComponent implements OnInit {
   }
   userId: number = 0;
   // Form data
-  leaveFormData : LeaveRequest={
-     
-    employeeId:0,
+  leaveFormData: LeaveRequest = {
+
+    employeeId: 0,
     leaveType: 'Casual Leave',
     startDate: '',
     endDate: '',
@@ -153,14 +154,18 @@ export class DashboardComponent implements OnInit {
   //   sick: { allocated: 10, used: 2, available: 8 },
   //   paid: { allocated: 15, used: 5, available: 10 }
   // };
-
+  private router = inject(Router);
   constructor(private dashboardService: DashboardService) { }
 
+  Redirect() {
+    this.router.navigate(['/admindashboard'])
+  }
   ngOnInit(): void {
     debugger;
     const userString = localStorage.getItem('user');
     if (userString) {
       const user = JSON.parse(userString);
+      this.employee = user;
       this.userId = user.employeeId; // <-- get ID
       console.log('User ID:', this.userId);
     }
@@ -204,10 +209,10 @@ export class DashboardComponent implements OnInit {
   }
   submitLeaveRequest() {
     debugger;
-    this.leaveFormData.employeeId=this.userId;
+    this.leaveFormData.employeeId = this.userId;
     this.dashboardService.applyLeave(this.leaveFormData).subscribe(res => {
-      if (res=='success') {
-        
+      if (res == 'success') {
+
       }
     });
   }
@@ -302,7 +307,7 @@ export class DashboardComponent implements OnInit {
 
   cancelLeaveRequest(): void {
     this.leaveFormData = {
-      employeeId:0,
+      employeeId: 0,
       leaveType: 'Casual Leave',
       startDate: '',
       endDate: '',

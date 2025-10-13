@@ -28,7 +28,7 @@
     <div class="form-row">
       <div class="form-group">
         <label>Date of Birth</label>
-        <input type="date" [(ngModel)]="employee.dateOfBirth" name="dob" required />
+        <input type="date" [(ngModel)]="employee.dateOfBirth" name="dob" [max]="today" required />
         <small class="error" *ngIf="empForm.submitted && !employee.dateOfBirth">
           Birth Date is required
         </small>
@@ -36,37 +36,40 @@
 
       <div class="form-group">
         <label>Date of Joining</label>
-        <input type="date" [(ngModel)]="employee.dateOfJoining" name="doj" required />
+        <input type="date" [(ngModel)]="employee.dateOfJoining" name="doj" (change)="onDateOfJoiningChange()"
+          required />
         <small class="error" *ngIf="empForm.submitted && !employee.dateOfJoining">
           Joining Date is required
         </small>
       </div>
     </div>
-
-     <!-- Row 3 -->
+    <div class="form-group">
+      <label>Probation Duration</label>
+      <select [(ngModel)]="selectedProbationMonths" name="probationMonths" (change)="calculateProbationEnd()">
+        <option value="" disabled selected>Select duration</option>
+        <option *ngFor="let m of probationDurations" [value]="m">{{m}} Months</option>
+      </select>
+    </div>
+    <!-- Row 3 -->
     <div class="form-row">
       <div class="form-group">
         <label>Probation Start</label>
-        <input type="date" [(ngModel)]="employee.startDate" name="probationStart" required />
+        <input type="date" [(ngModel)]="employee.startDate" name="probationStart" readonly />
         <small class="error" *ngIf="empForm.submitted && !employee.startDate">
-           Date is required
+          Date is required
         </small>
       </div>
 
       <div class="form-group">
         <label>Probation End</label>
-        <input type="date" [(ngModel)]="employee.endDate" name="probationEnd" required />
+        <input type="date" [(ngModel)]="employee.endDate" name="probationEnd" readonly />
         <small class="error" *ngIf="empForm.submitted && !employee.endDate">
-           Date is required
+          Date is required
         </small>
       </div>
     </div>
-    <div class="form-group">
-        <label>Probation Remark</label>
-        <input type="text" [(ngModel)]="employee.remarks" name="remark" />
-        
-      </div>
-    <!-- Row 3 -->
+
+    <!-- Rw 3 -->
     <div class="form-row">
       <div class="form-group">
         <label>Role</label>

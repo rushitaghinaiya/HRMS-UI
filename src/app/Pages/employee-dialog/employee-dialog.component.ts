@@ -28,11 +28,17 @@ export class EmployeeDialogComponent {
 
   roleList: Role[] = [];
   managerList: Manager[] = [];
-  constructor(private admindashboardService:AdminDashboardService) { }
+  probationDurations: number[] = [3, 6, 9, 12];
+  selectedProbationMonths: number | null = null;
+  today: string = '';
+  constructor(private admindashboardService: AdminDashboardService) { }
 
-  ngOnInit(){
+  ngOnInit() {
     this.getRole();
     this.loadEmployees();
+    this.onDateOfJoiningChange();
+    const currentDate = new Date();
+    this.today = currentDate.toISOString().split('T')[0]; // sets max date
   }
   save() {
     if (!this.employee.name || !this.employee.email || !this.employee.roleId || !this.employee.dateOfJoining) {
@@ -44,15 +50,32 @@ export class EmployeeDialogComponent {
   close() {
     this.onClose.emit();
   }
-  getRole(){
-     this.admindashboardService.getRoles().subscribe(res => {
+  getRole() {
+    this.admindashboardService.getRoles().subscribe(res => {
       debugger;
-    this.roleList = res;
-  });
+      this.roleList = res;
+    });
   }
-   loadEmployees() {
+  loadEmployees() {
     this.admindashboardService.getAllEmployee().subscribe(res => {
       this.managerList = res
     });
+  }
+  onDateOfJoiningChange() {
+    if (this.employee.dateOfJoining) {
+      this.employee.startDate = this.employee.dateOfJoining;
+      this.calculateProbationEnd(); // also update end date if duration already selected
+    }
+  }
+
+  calculateProbationEnd() {
+    if (this.employee.dateOfJoining && this.selectedProbationMonths) {
+      const doj = new Date(this.employee.dateOfJoining);
+      const probationEnd = new Date(doj);
+      probationEnd.setMonth(probationEnd.getMonth() + Number(this.selectedProbationMonths));
+      this.employee.endDate = probationEnd.toISOString().split('T')[0];
+    } else {
+      this.employee.endDate = ''; // clear if no duration or DOJ
+    }
   }
 }

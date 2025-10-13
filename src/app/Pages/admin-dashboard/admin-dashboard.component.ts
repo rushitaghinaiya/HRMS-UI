@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../Services/dashboard.service';
@@ -6,10 +6,7 @@ import { AdminDashboardService } from '../../Services/admin-dashboard.service';
 import { EmployeeDialogComponent } from '../employee-dialog/employee-dialog.component';
 import { LeaveDialogComponent } from '../leave-dialog/leave-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { HttpClientModule } from '@angular/common/http';
-
+import { Router } from '@angular/router';
 export interface Employee {
   employeeId: number;
   name: string;
@@ -27,11 +24,12 @@ export interface Employee {
 }
 
 export interface LeaveBalance {
-  LeaveType: string;
-  Allocated: number;
+  leaveType: string;
+  allocated: number;
   Used: number;
   Available: number
-  Year:string
+  year: string
+  leavePerMonth:number
 }
 export interface AttendanceRecord {
   Date: string;
@@ -41,6 +39,7 @@ export interface AttendanceRecord {
 }
 
 export interface LeaveHistory {
+  name:number;
   leaveId: number;
   managerId: number;
   email: string;
@@ -48,6 +47,7 @@ export interface LeaveHistory {
   startDate: string;
   endDate: string;
   days: number;
+  availableLeave:number;
   status: string;
   reason: string;
   appliedDate: string;
@@ -109,14 +109,14 @@ export interface BirthdayDto {
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [FormsModule, CommonModule, EmployeeDialogComponent,LeaveDialogComponent],
+  imports: [FormsModule, CommonModule, EmployeeDialogComponent, LeaveDialogComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
 })
 export class AdminDashboardComponent implements OnInit {
   activeTab: string = 'dashboard';
   selectedLeaveMonth: string = '';
-  selectedLeaveBalanceYear:string='';
+  selectedLeaveBalanceYear: string = '';
   leaveBalance: LeaveBalance[] = [];
   recentAttendance: AttendanceRecord[] = [];
   leaveHistory: LeaveHistory[] = [];
@@ -165,13 +165,13 @@ export class AdminDashboardComponent implements OnInit {
   birthdays: BirthdayDto[] = [];
   private intervalId: any;
 
-   // Default 3 leave types
-  leaveTypes: LeaveBalance[] = [
-    { LeaveType: 'Casual', Allocated: 0, Used: 0, Available: 0,Year:'' },
-    { LeaveType: 'Paid', Allocated: 0, Used: 0, Available: 0,Year:'' },
-    { LeaveType: 'Sick', Allocated: 0, Used: 0, Available: 0,Year:'' }
-  ];
-
+  // Default 3 leave types
+  // leaveTypes: LeaveBalance[] = [
+  //   { leaveType: 'Casual', allocated: 0, Used: 0, Available: 0, year: '' },
+  //   { leaveType: 'Paid', allocated: 0, Used: 0, Available: 0, year: '' },
+  //   { leaveType: 'Sick', allocated: 0, Used: 0, Available: 0, year: '' }
+  // ];
+  private router = inject(Router);
   constructor(private dashboardService: DashboardService, private dialog: MatDialog, private admindashboardService: AdminDashboardService) { }
 
   ngOnInit(): void {
@@ -197,7 +197,9 @@ export class AdminDashboardComponent implements OnInit {
     //   this.birthdays = res;
     // });
   }
-
+  Redirect() {
+     this.router.navigate(['/dashboard']);
+  }
   getDashboard() {
     // this.dashboardService.getEmployeeById(this.userId).subscribe(res => {
     //   this.employee = res;
@@ -229,7 +231,8 @@ export class AdminDashboardComponent implements OnInit {
   }
   loadEmployees() {
     this.admindashboardService.getAllEmployee().subscribe(res => {
-      this.employeeList = res.map((emp: any) => ({
+      var empList = this.employee.roleName == 'Admin' ? res : res.filter(e => e.managerId == this.userId)
+      this.employeeList = empList.map((emp: any) => ({
         ...emp,
         dateOfJoining: emp.dateOfJoining ? emp.dateOfJoining.split('T')[0] : null,
         dateOfBirth: emp.dateOfBirth ? emp.dateOfBirth.split('T')[0] : null
@@ -239,7 +242,7 @@ export class AdminDashboardComponent implements OnInit {
   onMonthChange(event: any): void {
     const [year, month] = this.selectedMonthYear.split('-').map(Number);
     this.admindashboardService.getLeaveRequest(month, year).subscribe(res => {
-      this.leaveHistory =this.employee.roleName=='Admin'?res: res.filter(l => l.managerId === this.userId);
+      this.leaveHistory = this.employee.roleName == 'Admin' ? res : res.filter(l => l.managerId === this.userId);
     });
 
   }
@@ -247,7 +250,7 @@ export class AdminDashboardComponent implements OnInit {
     const [year, month] = this.selectedAttMonthYear.split('-').map(Number);
 
     this.admindashboardService.getAttendanceLog(month, year).subscribe(res => {
-      this.attendanceLog =this.employee.roleName=='Admin'?res: res.filter(l => l.managerId === this.userId);
+      this.attendanceLog = this.employee.roleName == 'Admin' ? res : res.filter(l => l.managerId === this.userId);
     });
   }
   downloadAttendance(month: string) {
@@ -450,17 +453,17 @@ export class AdminDashboardComponent implements OnInit {
     this.dialogOpen = false;
   }
 
-  handleLeaveSave(leave:any){
+  handleLeaveSave(leave: any) {
     debugger
-    this.leaveTypes=leave;
-    const leaves = this.leaveTypes.map(l => ({
+    const leaves = {
       EmployeeId: this.selectedEmployee.employeeId,
-      LeaveType: l.LeaveType,
-      Allocated: l.Allocated,
-      Used: l.Used,
-      Year:l.Year
-    }));
-    this.leaveDialogOpen=false;
+      LeaveType: 'per month',
+      Allocated: leave.allocated,
+      LeavePerMonth:leave.leavePerMonth,
+      Used: leave.Used,
+      Year: leave.year
+    };
+    this.leaveDialogOpen = false;
 
     this.admindashboardService.addLeaveBalance(leaves).subscribe({
       next: () => {
@@ -471,7 +474,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
- save() {
+  save() {
     if (!this.employee.name || !this.employee.email) {
       return; // stop save if required fields missing
     }

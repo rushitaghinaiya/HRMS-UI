@@ -11,6 +11,9 @@
           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
         <h1 class="logo-text">HRMS</h1>
+        <button *ngIf="employee.roleName==='Manager'" class="nav-button" (click)="Redirect()">
+          Employee
+        </button>
       </div>
 
       <nav class="nav">
@@ -92,7 +95,7 @@
               <div class="leave-count">{{ leave[1].available }}/{{ leave[1].allocated }}</div>
             </div> -->
             <div *ngFor="let leave of leaveBalance" class="leave-type">
-              <div class="leave-label">{{leave.LeaveType }}</div>
+              <div class="leave-label">Available/Total Leave</div>
               <div class="leave-count">{{ leave.Available }}/{{ leave.Allocated }}</div>
             </div>
           </div>
@@ -215,7 +218,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Attendance Tab -->
     <div *ngIf="activeTab === 'attendance'" class="content-section">
       <h2 class="page-title">Attendance Records</h2>

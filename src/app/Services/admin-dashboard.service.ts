@@ -34,6 +34,10 @@ export class AdminDashboardService {
   addLeaveBalance(leaves: any) {
     return this.http.post(`${this.baseUrl}Leave/AssignLeave`, leaves);
   }
+   // ✅ Get Leave Balance by EmployeeId
+  getLeaveBalanceByEmployeeId(empId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}Leave/GetByEmployeeId?employeeId=${empId}`);
+  }
   downloadAttendanceReport(month: string, userId: number) {
     return this.http.get(`${this.baseUrl}Leave/GetAttendanceReport?month=${month}&managerId=${userId}&format=excel`, {
       responseType: 'blob'

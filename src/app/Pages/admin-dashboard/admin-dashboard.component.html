@@ -11,8 +11,12 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
                 <h1 class="logo-text">HRMS</h1>
+               
+                <button *ngIf="employee.roleName==='Manager'" class="nav-button" (click)="Redirect()">
+                    Manager
+                </button>
             </div>
-
+            
             <nav class="nav">
                 <button class="nav-button" [class.nav-button-active]="activeTab === 'dashboard'"
                     (click)="setActiveTab('dashboard')">
@@ -41,7 +45,7 @@
             </div>
         </div>
     </header>
-
+ <!-- <pre>{{employee|json}}</pre> -->
     <!-- Main Content -->
     <main class="main">
         <!-- Dashboard Tab -->
@@ -83,9 +87,10 @@
                             <td class="td">{{ emp.isActive }}</td>
                             <td class="td">
                                 <div>
-                                    <button class="approve-btn" style="margin-bottom: 3px; background-color: #4F46E5;" (click)="openDialog(emp)">Edit</button>
+                                    <button class="approve-btn" style="margin-bottom: 3px; background-color: #4F46E5;"
+                                        (click)="openDialog(emp)">Edit</button>
                                 </div>
-                                 <div>
+                                <div>
                                     <button class="approve-btn" (click)="openLeaveDialog(emp)">Add Leave</button>
                                 </div>
                             </td>
@@ -97,16 +102,16 @@
         <app-employee-dialog *ngIf="dialogOpen" [employee]="selectedEmployee" (onSave)="handleSave($event)"
             (onClose)="dialogOpen = false">
         </app-employee-dialog>
-        <app-leave-dialog *ngIf="leaveDialogOpen"  (onSave)="handleLeaveSave($event)"
-            (onClose)="leaveDialogOpen = false">
+        <app-leave-dialog *ngIf="leaveDialogOpen" [employeeId]="selectedEmployee.employeeId"
+            (onSave)="handleLeaveSave($event)" (onClose)="leaveDialogOpen = false">
         </app-leave-dialog>
         <!-- Attendance Tab -->
         <div *ngIf="activeTab === 'attendance'" class="content-section">
             <h2 class="page-title">Attendance Records</h2>
-             <div class="filter-section" style="margin-bottom: 16px; text-align-last: end;">
-                    <label>Select Month:</label>
-                    <input type="month" [(ngModel)]="selectedAttMonthYear" (change)="onAttendanceMonthchnge($event)" />
-                </div>
+            <div class="filter-section" style="margin-bottom: 16px; text-align-last: end;">
+                <label>Select Month:</label>
+                <input type="month" [(ngModel)]="selectedAttMonthYear" (change)="onAttendanceMonthchnge($event)" />
+            </div>
             <div class="card">
                 <table class="table">
                     <thead>
@@ -123,16 +128,16 @@
                     <tbody>
                         <tr *ngFor="let record of attendanceLog" class="tr">
                             <td class="td">{{ record.name }}</td>
-                            <td class="td">{{ record.email }}</td>
-                            <td class="td">{{ record.date }}</td>
-                            <td class="td">{{ record.checkInTime }}</td>
+                            <!-- <td class="td">{{ record.email }}</td> -->
+                            <td class="td">{{ record.date | date:'shortDate'}}</td>
+                            <td class="td">{{ record.checkInTime? (record.checkInTime | date:'shortTime') : '---' }}</td>
                             <td class="td">
                                 {{ record.checkOutTime ? (record.checkOutTime | date:'shortTime') : '---' }}
                             </td>
 
-                           
+
                             <td class="td">
-                              {{record.hours}}
+                                {{record.hours}}
                             </td>
                             <td class="td">
                                 <span class="status-badge">Present</span>
@@ -156,11 +161,11 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th class="th">Email</th>
-                            <th class="th">Type</th>
+                            <th class="th">Name</th>
                             <th class="th">Start Date</th>
                             <th class="th">End Date</th>
                             <th class="th">Days</th>
+                            <th class="th">Remaining Leave</th>
                             <th class="th">Reason</th>
                             <th class="th">Status</th>
                             <th class="th">AppliedDate</th>
@@ -169,11 +174,11 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let leave of leaveHistory" class="tr">
-                            <td class="td">{{ leave.email }}</td>
-                            <td class="td">{{ leave.leaveType }}</td>
+                            <td class="td">{{ leave.name }}</td>
                             <td class="td">{{ leave.startDate | date:'shortDate' }}</td>
                             <td class="td">{{ leave.endDate | date:'shortDate' }}</td>
                             <td class="td">{{ leave.days }}</td>
+                            <td class="td">{{leave.availableLeave}}</td>
                             <td class="td">{{ leave.reason }}</td>
                             <td class="td">
                                 <span class="approved-badge">{{ leave.status }}</span>
@@ -210,7 +215,7 @@
                         <line x1="16" y1="13" x2="8" y2="13"></line>
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                     </svg>
-                   
+
                     <h3 class="report-title">Attendance Report</h3>
                     <p class="report-desc">Download monthly attendance summary</p>
                     <button class="download-button" (click)="downloadAttendance(selectedLeaveMonth)">Download
@@ -236,4 +241,3 @@
         </div>
     </main>
 </div>
-
